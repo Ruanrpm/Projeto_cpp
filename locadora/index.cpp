@@ -3,6 +3,7 @@
 #include <limits>
 #include <algorithm>
 #include <iomanip>
+#include <cassert>
 
 #define N 10
 
@@ -33,6 +34,7 @@ void print_filme(Filme *v_filme[N]);
 void print_clientes(Cliente *v_cliente);
 void ordenar_cliente(Cliente *v_clientes , int n); /*função chamada dentra da função new_cliente*/
 void buscar_cliente(Cliente *v_clientes);
+void teste_filme();
 
 int main() {
     Filme *filmes = new(nothrow) Filme[N];
@@ -47,9 +49,7 @@ int main() {
         p_filmes[i] = &filmes[i];
     }
 
-    new_cliente(clientes , p_filmes);
-
-    print_clientes(clientes);
+    teste_filme();
 
     delete[] filmes;
 }
@@ -80,7 +80,7 @@ void new_film(Filme *film){
             
             cout << "So pode ser digitado numeros nessa entrada. Tente novamente: ";
         } else {
-            break; // Se a entrada foi válida, sai do loop
+            break;
         }
     }
     
@@ -200,4 +200,20 @@ void buscar_cliente(Cliente *v_clientes) {
             direita = meio - 1;
         }
     }
+}
+
+void teste_filme() {
+    const int MAX_FILMES = 2;
+    Filme filmes[MAX_FILMES];
+
+    cout << "Teste 1: Adicionando Filme 1" << endl;
+    
+
+    assert(filmes[0].titulo != "");
+    assert(filmes[0].genero != "");
+    assert(filmes[0].sinopse != "");
+    assert(filmes[0].ID == 0);
+    assert(filmes[0].ano > 0 && filmes[0].ano <= 9999);
+    
+
 }
