@@ -29,12 +29,14 @@ typedef struct  {
 
 
 void new_film(Filme *film);
-void new_cliente(Cliente *cliente, Filme *F[N]);
+void new_cliente(Cliente *cliente, Filme *v_filmes);
 void print_filme(Filme *v_filme[N]);
 void print_clientes(Cliente *v_cliente);
-void ordenar_cliente(Cliente *v_clientes , int n); /*função chamada dentra da função new_cliente*/
+void ordenar_cliente(Cliente *v_clientes , int n); /*função chamada dentro da função new_cliente*/
 void buscar_cliente(Cliente *v_clientes);
-void teste_filme();
+void teste_filme(Filme *v_filmes);
+void teste_cliente(Cliente *v_clientes);
+void teste_ordenar(Cliente *v_clientes); /*função deve ser chamada dentro da função ordenar_cliente*/
 
 int main() {
     Filme *filmes = new(nothrow) Filme[N];
@@ -49,30 +51,31 @@ int main() {
         p_filmes[i] = &filmes[i];
     }
 
-    teste_filme();
+    new_cliente(clientes , *p_filmes);
+    new_film(*p_filmes);
 
     delete[] filmes;
 }
 
 
 
-void new_film(Filme *film){
+void new_film(Filme *v_filmes){
     static int contador = 0;
 
     cout << "Nome do Filme: ";
-    getline(cin, film[contador].titulo);
+    getline(cin, v_filmes[contador].titulo);
 
     cout << "Genero do filme: ";
-    getline(cin, film[contador].genero);
+    getline(cin, v_filmes[contador].genero);
 
     cout << "sinopse do Filme: ";
-    getline(cin, film[contador].sinopse);
+    getline(cin, v_filmes[contador].sinopse);
 
-    film[contador].ID = contador;
+    v_filmes[contador].ID = contador;
 
     cout << "Ano de lancamento do Filme: ";
     while (true) {
-        cin >> film[contador].ano;  
+        cin >> v_filmes[contador].ano;  
 
         if (cin.fail()) {
             cin.clear(); 
@@ -92,7 +95,7 @@ void new_film(Filme *film){
     contador++;
 }
 
-void new_cliente(Cliente *cliente, Filme *F[N]) {
+void new_cliente(Cliente *cliente, Filme *v_filmes) {
     static int contador = 0;
     char v;
 
@@ -109,9 +112,9 @@ void new_cliente(Cliente *cliente, Filme *F[N]) {
             cout << "Digite o ID do Filme: ";
             cin >> var;
             for (int i = 0; i < N; i++) {
-                if ((var-1) == F[i]->ID) {
-                    cliente[contador].f_locado = F[i]->titulo;
-                    cout << "Voce locou o filme: " << F[i]->titulo << "\n" <<endl;
+                if ((var-1) == v_filmes[i].ID) {
+                    cliente[contador].f_locado = v_filmes[i].titulo;
+                    cout << "Voce locou o filme: " << v_filmes[i].titulo << "\n" <<endl;
                     verify = false;
                     break;
                 }
@@ -130,9 +133,9 @@ void new_cliente(Cliente *cliente, Filme *F[N]) {
             break;
         }
     }
+    ordenar_cliente(cliente , quantidade_clientes);
     quantidade_clientes++;
     contador++;
-    ordenar_cliente(cliente , quantidade_clientes);
 }
 
 void print_filme(Filme *v_filme[N]) {
@@ -202,18 +205,30 @@ void buscar_cliente(Cliente *v_clientes) {
     }
 }
 
-void teste_filme() {
-    const int MAX_FILMES = 2;
-    Filme filmes[MAX_FILMES];
+void teste_filme(Filme *v_filmes) {   
+    assert(v_filmes[0].titulo != "");
+    assert(v_filmes[0].genero != "");
+    assert(v_filmes[0].sinopse != "");
+    assert(v_filmes[0].ID == 0);
+    assert(v_filmes[0].ano > 0 && v_filmes[0].ano <= 9999);
 
-    cout << "Teste 1: Adicionando Filme 1" << endl;
-    
+    cout << "Filme adicionado com sucesso." <<endl;
+}
 
-    assert(filmes[0].titulo != "");
-    assert(filmes[0].genero != "");
-    assert(filmes[0].sinopse != "");
-    assert(filmes[0].ID == 0);
-    assert(filmes[0].ano > 0 && filmes[0].ano <= 9999);
-    
+void teste_cliente(Cliente *v_clientes) {
+    assert(v_clientes[0].nome != "");
+    assert(v_clientes[0].ID >= 0 && v_clientes[0].ID < 9999);
+    assert(v_clientes[0].f_locado != "");
 
+    cout << "Cliente adicionado com sucesso." <<endl;
+}
+
+void teste_ordenar(Cliente *v_clientes) {
+    for (int i = 0; i < N; i++) {
+        assert(v_clientes[i].nome > v_clientes[i+1].nome);
+    }
+}
+
+void teste_busca(Cliente *v_clientes , int meio , int busca_id) {
+    assert(v_clientes[meio].nome != v_clientes[busca_id].nome);
 }
