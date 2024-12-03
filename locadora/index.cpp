@@ -33,10 +33,11 @@ void new_cliente(Cliente *cliente, Filme *v_filmes);
 void print_filme(Filme *v_filme[N]);
 void print_clientes(Cliente *v_cliente);
 void ordenar_cliente(Cliente *v_clientes , int n); /*função chamada dentro da função new_cliente*/
+void ordenar_filmes(Filme *v_filmes, int n);
 void buscar_cliente(Cliente *v_clientes);
 void teste_filme(Filme *v_filmes);
 void teste_cliente(Cliente *v_clientes);
-void teste_ordenar(Cliente *v_clientes); /*função deve ser chamada dentro da função ordenar_cliente*/
+void teste_ordenar(Cliente *v_clientes);
 
 int main() {
     Filme *filmes = new(nothrow) Filme[N];
@@ -45,14 +46,58 @@ int main() {
         return 1;
     }
     Filme *p_filmes[N];
-    Cliente clientes[N];
-
     for (int i = 0; i < N; i++) {
         p_filmes[i] = &filmes[i];
     }
 
-    new_cliente(clientes , *p_filmes);
-    new_film(*p_filmes);
+    Cliente *clientes = new(nothrow) Cliente[N];
+    if (!filmes) {
+        cout << "Erro ao alocar memória para filmes.\n";
+        return 1;
+    }
+    Cliente *p_clientes[N];
+    for (int i = 0; i < N; i++) {
+        p_clientes[i] = &clientes[i];
+    }
+
+    char escolha;
+    
+    do {
+        cout << left << setw(30) << "escolhas" << "| digite" << endl;
+        cout << string(42 , '-') << endl;
+        cout << left << setw(30) << "Adicionar filmes" << "| 1" << endl; 
+        cout << left << setw(30) << "Mostrar filmes diponiveis" << "| 2" << endl; 
+        cout << left << setw(30) << "Adicionar clientes" << "| 3" << endl; 
+        cout << left << setw(30) << "Mostrar clientes cadastrados" << "| 4" << endl;
+        cout << left << setw(30) << "Buscar um cliente via ID" << "| 5" << endl;  
+        cout << left << setw(30) << "Para sair" << "| 0\n" << endl;  
+
+        cout << "Digite sua escolha: ";
+        cin >> escolha;
+        cout <<endl;
+
+        cin.ignore();
+
+        if (escolha > 5 || escolha < 0) {
+            cout << "Nao existe uma funcionalidade com essa escolha\n" <<endl;
+        } 
+
+        switch (escolha) {
+        case 1:
+            new_film(*p_filmes);
+            break;
+        case 2:
+            print_filme(p_filmes);
+            break;
+        case 3:
+            new_cliente(*p_clientes , *p_filmes);
+            break;
+        
+        default:
+            break;
+        }
+    } while (escolha != 0);
+    
 
     delete[] filmes;
 }
@@ -87,11 +132,12 @@ void new_film(Filme *v_filmes){
         }
     }
     
-    cout <<endl;
+    cout << "!!!Fime adicionado com sucesso!!!\n" <<endl;
      
     cin.ignore(numeric_limits<streamsize>::max(), '\n');
 
     filmes_disponiveis++;
+    ordenar_filmes(v_filmes , filmes_disponiveis);
     contador++;
 }
 
@@ -104,25 +150,27 @@ void new_cliente(Cliente *cliente, Filme *v_filmes) {
     cliente[contador].ID = contador;
 
     cout << "Deseja locar um filme? (S)/(N): ";
-    while ((cin >> v)) {
+    bool verify = false;
+    while (!verify) {
+        cin >> v;
         cin.ignore(numeric_limits<streamsize>::max(), '\n');
-        bool verify = true;
         if (v == 'S') {
             int var;
-            cout << "Digite o ID do Filme: ";
-            cin >> var;
-            for (int i = 0; i < N; i++) {
-                if ((var-1) == v_filmes[i].ID) {
-                    cliente[contador].f_locado = v_filmes[i].titulo;
-                    cout << "Voce locou o filme: " << v_filmes[i].titulo << "\n" <<endl;
-                    verify = false;
-                    break;
+            while (!verify) {
+                cout << "Digite o ID do Filme: ";
+                cin >> var;
+                for (int i = 0; i < N; i++) {
+                    if ((var) == v_filmes[i].ID) {
+                        cliente[contador].f_locado = v_filmes[i].titulo;
+                        cout << "Filme locado: " << v_filmes[i].titulo << "\n" <<endl;
+                        verify = true;
+                        break;
+                    }   
                 }
-                    if ((i = N-1) && verify) {
-                        cout << "Filme não encontrado. " <<endl;
-                    }
+                if (!verify) {
+                    cout << "Filme nao encontrado. " <<endl;
+                }
             }
-            break;
         }
         else if (v != 'N') {
             cout << "So Pode ser digitado (S) ou (N): ";
@@ -133,18 +181,18 @@ void new_cliente(Cliente *cliente, Filme *v_filmes) {
             break;
         }
     }
-    ordenar_cliente(cliente , quantidade_clientes);
     quantidade_clientes++;
+    ordenar_cliente(cliente , quantidade_clientes);
     contador++;
 }
 
 void print_filme(Filme *v_filme[N]) {
+    cout << left << setw(30) << "Lista de filmes" << "| ID" << endl; 
+    cout << string(25, '-') << endl; 
     for (int i = 0; i < filmes_disponiveis; i++) {
-        cout << "Nome do filme: " << (*(v_filme + i))->titulo << endl;
-        cout << "Genero do filme: " << (*(v_filme + i))->genero << endl;
-        cout << "Sinopse do filme: " << (*(v_filme + i))->sinopse << endl;
-        cout << "Ano do filme: " << (*(v_filme + i))->ano << "\n" << endl;
+        cout << left << setw(30) << (*(v_filme + i))->titulo << "| " << (*(v_filme + i))->ID <<endl;
     }
+    cout << "\n" <<endl;
 }
 
 void print_clientes(Cliente *v_clientes) {
@@ -152,8 +200,7 @@ void print_clientes(Cliente *v_clientes) {
     cout << string(25, '-') << endl; 
 
     for (int i = 0; i < quantidade_clientes; i++) {
-        cout << left << setw(20) << v_clientes[i].nome  
-             << "| " << v_clientes[i].ID << endl;                
+        cout << left << setw(20) << v_clientes[i].nome << "| " << v_clientes[i].ID << endl;                
     }
 }
 
@@ -167,6 +214,18 @@ void ordenar_cliente(Cliente *v_clientes , int n) {
         }
     }   
     ordenar_cliente(v_clientes , n-1);
+}
+
+void ordenar_filmes(Filme *v_filmes, int n) {
+    if (n == 1) return;
+    for (int j = 0; j < n-1; j++) {
+        if (v_filmes[j].titulo > v_filmes[j+1].titulo) {
+            swap(v_filmes[j].titulo , v_filmes[j+1].titulo);
+            v_filmes[j].ID = j;
+            v_filmes[j+1].ID = j+1;
+        }
+    }   
+    ordenar_filmes(v_filmes , n-1);
 }
 
 void buscar_cliente(Cliente *v_clientes) {
