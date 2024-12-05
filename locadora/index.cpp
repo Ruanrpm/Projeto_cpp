@@ -18,6 +18,7 @@ typedef struct {
     string sinopse;
     int ID;
     int ano;
+    int quantia;
 } Filme;
 
 typedef struct  {
@@ -28,16 +29,17 @@ typedef struct  {
 
 
 
-void new_film(Filme *film);
-void new_cliente(Cliente *cliente, Filme *v_filmes);
-void print_filme(Filme *v_filme[N]);
-void print_clientes(Cliente *v_cliente);
+void new_film(Filme *film); /*funcinando*/
+void buscar_filme(Filme *v_filmes);
+void teste_filme(Filme *v_filmes); /*funciona*/
+void print_filme(Filme *v_filme[N]); /*funcinando*/
+void ordenar_filmes(Filme *v_filmes, int n); /*funcionando*/
+void new_cliente(Cliente *cliente, Filme *v_filmes); /*funcionado*/
+void print_clientes(Cliente *v_cliente); /*funcionando*/
 void ordenar_cliente(Cliente *v_clientes , int n); /*função chamada dentro da função new_cliente*/
-void ordenar_filmes(Filme *v_filmes, int n);
-void buscar_cliente(Cliente *v_clientes);
-void teste_filme(Filme *v_filmes);
-void teste_cliente(Cliente *v_clientes);
-void teste_ordenar(Cliente *v_clientes);
+void buscar_cliente(Cliente *v_clientes , Filme *v_filmes); /*funcionando*/
+void teste_cliente(Cliente *v_clientes); /*funciona*/
+void teste_ordenar(Cliente *v_clientes); /*funciona*/
 
 int main() {
     Filme *filmes = new(nothrow) Filme[N];
@@ -60,7 +62,7 @@ int main() {
         p_clientes[i] = &clientes[i];
     }
 
-    char escolha;
+    int escolha;
     
     do {
         cout << left << setw(30) << "escolhas" << "| digite" << endl;
@@ -70,7 +72,8 @@ int main() {
         cout << left << setw(30) << "Adicionar clientes" << "| 3" << endl; 
         cout << left << setw(30) << "Mostrar clientes cadastrados" << "| 4" << endl;
         cout << left << setw(30) << "Buscar um cliente via ID" << "| 5" << endl;  
-        cout << left << setw(30) << "Para sair" << "| 0\n" << endl;  
+        cout << left << setw(30) << "informacoes do um filme" << "| 6" << endl; 
+        cout << left << setw(30) << "Para sair" << "| aperte qualquer tecla ou 0\n" << endl;  
 
         cout << "Digite sua escolha: ";
         cin >> escolha;
@@ -78,7 +81,7 @@ int main() {
 
         cin.ignore();
 
-        if (escolha > 5 || escolha < 0) {
+        if (escolha > 6 || escolha < 0) {
             cout << "Nao existe uma funcionalidade com essa escolha\n" <<endl;
         } 
 
@@ -92,6 +95,14 @@ int main() {
         case 3:
             new_cliente(*p_clientes , *p_filmes);
             break;
+        case 4:
+            print_clientes(*p_clientes);
+            break;
+        case 5:
+            buscar_cliente(*p_clientes , *p_filmes);
+            break;
+        case 6:
+            buscar_filme(*p_filmes);
         
         default:
             break;
@@ -131,8 +142,22 @@ void new_film(Filme *v_filmes){
             break;
         }
     }
+
+    cout << "Quantidade na Prateleira: ";
+    while (true) {
+        cin >> v_filmes[contador].quantia;  
+
+        if (cin.fail()) {
+            cin.clear(); 
+            cin.ignore(numeric_limits<streamsize>::max(), '\n'); 
+            
+            cout << "So pode ser digitado numeros nessa entrada. Tente novamente: ";
+        } else {
+            break;
+        }
+    }
     
-    cout << "!!!Fime adicionado com sucesso!!!\n" <<endl;
+    cout << "!!!Filme adicionado com sucesso!!!\n" <<endl;
      
     cin.ignore(numeric_limits<streamsize>::max(), '\n');
 
@@ -161,9 +186,18 @@ void new_cliente(Cliente *cliente, Filme *v_filmes) {
                 cin >> var;
                 for (int i = 0; i < N; i++) {
                     if ((var) == v_filmes[i].ID) {
-                        cliente[contador].f_locado = v_filmes[i].titulo;
-                        cout << "Filme locado: " << v_filmes[i].titulo << "\n" <<endl;
                         verify = true;
+                        if (v_filmes[i].quantia > 0) {
+                            cliente[contador].f_locado = v_filmes[i].titulo;
+                            v_filmes[i].quantia--;
+                            cout << "Filme locado: " << v_filmes[i].titulo << "\n" <<endl;
+                            break;
+                        } 
+                        else if (verify){
+                            cliente[contador].f_locado = "Nao locado";
+                            cout << "Nao temos esse filme diponivel, volte outra hora!!!\n" <<endl;  
+                            break;
+                        }
                         break;
                     }   
                 }
@@ -202,6 +236,7 @@ void print_clientes(Cliente *v_clientes) {
     for (int i = 0; i < quantidade_clientes; i++) {
         cout << left << setw(20) << v_clientes[i].nome << "| " << v_clientes[i].ID << endl;                
     }
+    cout << "\n"<<endl;
 }
 
 void ordenar_cliente(Cliente *v_clientes , int n) {
@@ -228,7 +263,7 @@ void ordenar_filmes(Filme *v_filmes, int n) {
     ordenar_filmes(v_filmes , n-1);
 }
 
-void buscar_cliente(Cliente *v_clientes) {
+void buscar_cliente(Cliente *v_clientes , Filme *v_filmes) {
     int id_busca;
     bool entrada_valida = false;
     do {
@@ -239,10 +274,11 @@ void buscar_cliente(Cliente *v_clientes) {
             cin.clear();
             cin.ignore(1000,'\n');
 
-            cout << "Entrada invalida. Por favor, digite um numero valido." <<endl;
+            cout << "Entrada invalida. Por favor, digite um numero valido.\n" <<endl;
         }      
         else {
             entrada_valida = true;
+            cout << "\n" <<endl;
         }  
     } while (!entrada_valida); 
 
@@ -255,6 +291,48 @@ void buscar_cliente(Cliente *v_clientes) {
         if (v_clientes[meio].ID == id_busca) {
             cout << "Cliente: " << v_clientes[meio].nome <<endl;
             cout << "Filme locado: " << v_clientes[meio].f_locado <<endl;
+            cout << "\n" <<endl;
+
+            cout << "Deseja trocar o filme locado? (S)/(N): ";
+            char v;
+            bool verify = false;
+            while (!verify) {
+                cin >> v;
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                if (v == 'S') {
+                    int var;
+                    while (!verify) {
+                        cout << "Digite o ID do Filme: ";
+                        cin >> var;
+                        for (int i = 0; i < N; i++) {
+                            if ((var) == v_filmes[i].ID) {
+                                verify = true;
+                                if (v_filmes[i].quantia > 0) {
+                                    v_clientes[meio].f_locado = v_filmes[i].titulo;
+                                    v_filmes[i].quantia--;
+                                    cout << "Filme locado: " << v_filmes[i].titulo << "\n" <<endl;
+                                    break;
+                                } 
+                                else if (verify){
+                                    cout << "Nao temos esse filme diponivel, volte outra hora!!!\n" <<endl;
+                                    verify = true;
+                                    break;
+                                }
+                            }   
+                        }
+                        if (!verify) {
+                            cout << "Filme nao encontrado. " <<endl;
+                        }
+                    }
+                }
+                else if (v != 'N') {
+                    cout << "So Pode ser digitado (S) ou (N): ";
+                }
+                else {
+                    cout << "\n" <<endl;
+                    break;
+                }
+            }
         }
         if (v_clientes[meio].ID < id_busca) {
             esquerda = meio + 1; 
@@ -262,6 +340,52 @@ void buscar_cliente(Cliente *v_clientes) {
             direita = meio - 1;
         }
     }
+}
+
+void buscar_filme(Filme *v_filmes) {
+    int id_busca;
+    bool entrada_valida = false;
+    do {
+        cout << "Digite o ID do filme que voce deseja encontrar: ";
+
+        if (!(cin >> id_busca) || id_busca >= filmes_disponiveis) {
+
+            cin.clear();
+            cin.ignore(1000,'\n');
+
+            cout << "Entrada invalida. Por favor, digite um ID valido.\n" <<endl;
+        }      
+        else {
+            entrada_valida = true;
+            cout << "\n" <<endl;
+        }  
+    } while (!entrada_valida); 
+
+    int esquerda = 0;
+    int direita = filmes_disponiveis -1;
+    bool encontrado = false;
+    while (esquerda <= direita) {
+        int meio = esquerda + (direita - esquerda) / 2;
+
+        if (v_filmes[meio].ID == id_busca) {
+            cout << "Titulo: " << v_filmes[meio].titulo <<endl;
+            cout << "Genero: " << v_filmes[meio].genero <<endl;
+            cout << "Sinopse: " << v_filmes[meio].sinopse <<endl;
+            cout << "Lancado em: " << v_filmes[meio].ano <<endl;
+            cout << "Disponiveis na prateleira: " << v_filmes[meio].quantia <<endl;
+            cout << "\n" <<endl;
+            encontrado = true;
+            break;
+        }
+        if (v_filmes[meio].ID < id_busca) {
+            esquerda = meio + 1; 
+        } else {
+            direita = meio - 1;
+        }
+    }
+    if (!encontrado) {
+    cout << "Filme com ID " << id_busca << " nao encontrado.\n" << endl;
+}
 }
 
 void teste_filme(Filme *v_filmes) {   
